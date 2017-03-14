@@ -1,0 +1,42 @@
+=============================================================================================================
+query 1
+
+
+select id,name,salary,rank from
+(
+select id,name,salary,dense_rank() over(partition by unit order by salary desc) as rank
+from employees
+where salary<100
+)
+temp
+where rank=2;
+
+
+=============================================================================================================
+query 2
+
+select unit,id,name,salary from employees as emp1 
+(
+select avg(salary) as avgsalary from
+(
+select unit,id,salary,rank() over(partition by unit) as rank from employees as emp
+)
+temp        
+group by unit;
+)
+where salary>avgsalary and emp1.unit=temp.unit;
+
+
+select e1.id,e1.unit,e1.name,e1.salary from employees e1            "always use alias name  when two table are used twice
+JOIN
+(
+select e2.unit,avg(salary) as avgsalary from employees e2 group by unit		
+)
+temp								    "this temp table are always generated
+on
+e1.unit=temp.unit
+where e1.salary>temp.avgsalary ;
+
+
+
+
